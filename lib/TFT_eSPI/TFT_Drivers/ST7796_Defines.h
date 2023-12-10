@@ -1,12 +1,7 @@
 // Change the width and height if required (defined in portrait mode)
 // or use the constructor to over-ride defaults
-#ifndef TFT_WIDTH
 #define TFT_WIDTH  320
-#endif
-
-#ifndef TFT_HEIGHT
 #define TFT_HEIGHT 480
-#endif
 
 // Generic commands used by TFT_eSPI.cpp
 #define TFT_NOP     0x00

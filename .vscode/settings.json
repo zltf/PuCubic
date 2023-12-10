@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "lua.h": "c",
+        "*.tcc": "cpp",
+        "ostream": "cpp"
     }
 }

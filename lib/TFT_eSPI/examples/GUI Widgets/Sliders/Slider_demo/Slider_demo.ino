@@ -142,7 +142,7 @@ void touch_calibrate()
 
   // check file system exists
   if (!LittleFS.begin()) {
-    Serial.println("formatting file system");
+    Serial.println("Formating file system");
     LittleFS.format();
     LittleFS.begin();
   }
@@ -171,7 +171,7 @@ void touch_calibrate()
   } else {
     // data not valid so recalibrate
     tft.fillScreen(TFT_BLACK);
-    tft.setcursor(20, 0);
+    tft.setCursor(20, 0);
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);

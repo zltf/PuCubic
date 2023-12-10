@@ -44,8 +44,3 @@ libraries scanning project source files.
 
 More information about PlatformIO Library Dependency Finder
 - https://docs.platformio.org/page/librarymanager/ldf.html
-
-libs version:
-- bodmer/TFT_eSPI@^2.5.41
-- lvgl/lvgl@^8.3.9
-- lua-5.4.6
