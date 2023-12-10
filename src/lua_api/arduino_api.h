@@ -7,4 +7,4 @@ extern "C" {
 #include "Arduino.h"
 #include "common.h"
 
-int luaregister_file(lua_State *L);
+int luaregister_arduino(lua_State *L);

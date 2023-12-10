@@ -1,39 +1,38 @@
 #include "common.h"
 
-#include "lua_api/tft_api.h"
-#include "lua_api/serial_api.h"
-#include "lua_api/file_api.h"
+#include "lua_api/arduino_api.h"
 
 static const uint16_t screenWidth  = 240;
 static const uint16_t screenHeight = 240;
 
 TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight);
 SdCard tf;
-
-uint16_t img[240 * 240];
+IMU mpu;
+ImuAction act_info;
 
 lua_State *L;
 
 #define USE_CODE_LUA 1
 String lua_code = R"(
 function setup()
-    serial.log_i("setup")
-    serial.log_i(string.format("content: %s", file.read_file("/init.lua")))
-    file.write_file("/main.lua", 'print("hello")')
-    file.delete_file("/init.lua")
+    arduino.log_i("setup")
+    arduino.log_i(string.format("content: %s", arduino.read_file("/init.lua")))
+    arduino.write_file("/main.lua", 'print("hello")')
+    arduino.delete_file("/init.lua")
 end
 
 function loop()
-    -- serial.log_i("loop")
+    -- arduino.log_i("loop")
+    local ax, ay, az, gx, gy, gz = arduino.get_mpu_info()
+    arduino.log_i(string.format("ms:%d ,ax:%d, ay:%d, az:%d, gx:%d, gy:%d, gz:%d", arduino.millis(), ax, ay, az, gx, gy, gz))
+    arduino.delay(200)
 end
 )";
 
 void lua_init() {
     L = luaL_newstate();
     luaL_openlibs(L);
-    luaregister_tft(L);
-    luaregister_serial(L);
-    luaregister_file(L);
+    luaregister_arduino(L);
     if (L == NULL) {
         log_i("Failed to create Lua state.");
         return;
@@ -84,15 +83,25 @@ void run_lua_loop() {
     }
 }
 
-void setup() {
-    delay(2000);
-
-    tf.init();
-    lua_init();
+void tft_init() {
     tft.init();
     tft.fillScreen(TFT_BLACK);
-    Serial.begin(115200);
+    tft.setRotation(4);
+}
 
+void mpu_init() {
+    SysMpuConfig sys_mpu_config = {0, 0, 0, 0, 0, 0};
+    mpu.init(4, 1, &sys_mpu_config);
+}
+
+void setup() {
+    delay(2000);
+    setCpuFrequencyMhz(240); // 设置主频到最高
+    Serial.begin(115200);
+    tft_init();
+    tf.init();
+    mpu_init();
+    lua_init();
     run_lua_setup();
 }
 
