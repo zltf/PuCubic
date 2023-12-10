@@ -3,6 +3,7 @@
         "cassert": "cpp",
         "lua.h": "c",
         "*.tcc": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "functional": "cpp"
     }
 }

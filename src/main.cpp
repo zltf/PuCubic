@@ -1,22 +1,30 @@
-#include <TFT_eSPI.h>
+#include "common.h"
+
 #include "lua_api/tft_api.h"
 #include "lua_api/serial_api.h"
+#include "lua_api/file_api.h"
 
 static const uint16_t screenWidth  = 240;
 static const uint16_t screenHeight = 240;
 
 TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight);
+SdCard tf;
+
 uint16_t img[240 * 240];
 
 lua_State *L;
 
-char* lua_code = R"(
+#define USE_CODE_LUA 1
+String lua_code = R"(
 function setup()
     serial.log_i("setup")
+    serial.log_i(string.format("content: %s", file.read_file("/init.lua")))
+    file.write_file("/main.lua", 'print("hello")')
+    file.delete_file("/init.lua")
 end
 
 function loop()
-    serial.log_i("loop")
+    -- serial.log_i("loop")
 end
 )";
 
@@ -25,11 +33,18 @@ void lua_init() {
     luaL_openlibs(L);
     luaregister_tft(L);
     luaregister_serial(L);
+    luaregister_file(L);
     if (L == NULL) {
         log_i("Failed to create Lua state.");
         return;
     }
-    int result = luaL_dostring(L, lua_code);
+    String code = tf.readFile("/main.lua");
+    log_i("%s", code.c_str());
+    #if USE_CODE_LUA
+        code = lua_code;
+    #endif
+    log_i("%s", code.c_str());
+    int result = luaL_dostring(L, code.c_str());
     if (result != LUA_OK) {
         const char* errorMsg = lua_tostring(L, -1);
         log_i("Error executing script: %s", errorMsg);
@@ -70,6 +85,9 @@ void run_lua_loop() {
 }
 
 void setup() {
+    delay(2000);
+
+    tf.init();
     lua_init();
     tft.init();
     tft.fillScreen(TFT_BLACK);
