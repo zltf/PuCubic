@@ -47,14 +47,17 @@ static int l_delete_file(lua_State *L)
 
 static int l_get_mpu_info(lua_State *L)
 {
-    mpu.getVirtureMotion6(&act_info);
-    lua_pushinteger(L, act_info.v_ax);
-    lua_pushinteger(L, act_info.v_ay);
-    lua_pushinteger(L, act_info.v_az);
-    lua_pushinteger(L, act_info.v_gx);
-    lua_pushinteger(L, act_info.v_gy);
-    lua_pushinteger(L, act_info.v_gz);
-    return 6;
+    double angleX, angleY, angleZ;
+    if(xSemaphoreTake(semaphoreMPUInfo, portMAX_DELAY)) {
+        angleX = mpuInfo.angleX;
+        angleY = mpuInfo.angleY;
+        angleZ = mpuInfo.angleZ;
+        xSemaphoreGive(semaphoreMPUInfo);
+    }
+    lua_pushnumber(L, angleX);
+    lua_pushnumber(L, angleY);
+    lua_pushnumber(L, angleZ);
+    return 3;
 }
 
 static const struct luaL_Reg arduinoLib[] = {

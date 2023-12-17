@@ -7,8 +7,9 @@ static const uint16_t screenHeight = 240;
 
 TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight);
 SdCard tf;
-IMU mpu;
-ImuAction act_info;
+MPU6050 mpu(Wire);
+MPUInfo mpuInfo;
+SemaphoreHandle_t semaphoreMPUInfo;
 
 lua_State *L;
 
@@ -22,10 +23,10 @@ function setup()
 end
 
 function loop()
-    -- arduino.log_i("loop")
-    local ax, ay, az, gx, gy, gz = arduino.get_mpu_info()
-    arduino.log_i(string.format("ms:%d ,ax:%d, ay:%d, az:%d, gx:%d, gy:%d, gz:%d", arduino.millis(), ax, ay, az, gx, gy, gz))
-    arduino.delay(200)
+    arduino.log_i("loop")
+    local ax, ay, az = arduino.get_mpu_info()
+    arduino.log_i(string.format("ms:%d ,ax:%f, ay:%f, az:%f", arduino.millis(), ax, ay, az))
+    arduino.delay(1000)
 end
 )";
 
@@ -89,9 +90,25 @@ void tft_init() {
     tft.setRotation(4);
 }
 
+void mpuTask(void *param) {
+    while(true) {
+        if(xSemaphoreTake(semaphoreMPUInfo, portMAX_DELAY)) {
+            mpu.update();
+            mpuInfo.angleX = mpu.getAngleX();
+            mpuInfo.angleY = mpu.getAngleY();
+            mpuInfo.angleZ = mpu.getAngleZ();
+            xSemaphoreGive(semaphoreMPUInfo);
+        }
+        delay(5);
+    }
+}
+
 void mpu_init() {
-    SysMpuConfig sys_mpu_config = {0, 0, 0, 0, 0, 0};
-    mpu.init(4, 1, &sys_mpu_config);
+    Wire.begin(41, 42);
+    mpu.begin();
+    mpu.calcGyroOffsets();
+    semaphoreMPUInfo = xSemaphoreCreateMutex();
+    xTaskCreatePinnedToCore(mpuTask, "mpuTask", 4096, NULL, 5, NULL, 1);
 }
 
 void setup() {
