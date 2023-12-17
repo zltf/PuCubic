@@ -67,12 +67,36 @@ function setup()
     ]])
 
     arduino.web_begin()
+
+    local img = {}
+    for i = 1, 100 do
+        for j = 1, 100 do
+            table.insert(img, i * 100)
+        end
+    end
+
+    arduino.tft_img(100, 100, 100, 100, img)
 end
 
+local off = 0
+
 function loop()
+    arduino.log_i("loop1")
     arduino.web_loop()
-    --arduino.log_i("loop")
+    arduino.log_i("loop2")
     local ax, ay, az = arduino.get_mpu_info()
+    arduino.log_i("loop3")
     --arduino.log_i(string.format("ms:%d ,ax:%f, ay:%f, az:%f", arduino.millis(), ax, ay, az))
-    arduino.delay(1000)
+    local img = {}
+    for i = 1, 100 do
+        for j = 1, 100 do
+            table.insert(img, i * 100)
+        end
+    end
+    arduino.log_i("loop4")
+
+    off = off + 1
+
+    arduino.tft_fill(100 + off - 1, 100 + off - 1, 100, 100, 0)
+    arduino.tft_img(100 + off, 100 + off, 100, 100, img)
 end

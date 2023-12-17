@@ -91,6 +91,22 @@ void mpu_init() {
     xTaskCreatePinnedToCore(mpuTask, "mpuTask", 4096, NULL, 5, NULL, 1);
 }
 
+// void printMemoryInfo() {  
+//   int freeMemory;  
+//   int totalMemory = ESP.getFreeSketchSpace() - 0x1000; // 减去保留的内存空间  
+//   freeMemory = ESP.getFreeHeap();  
+//   log_i("Memory Info:");  
+//   log_i("Total memory: ");  
+//   log_i("%d", totalMemory);  
+//   log_i(" bytes");  
+//   log_i("Free memory: ");  
+//   log_i("%d", freeMemory);  
+//   log_i(" bytes");  
+//   log_i("Used memory: ");  
+//   log_i("%d", totalMemory - freeMemory);  
+//   log_i(" bytes");  
+// }
+
 void setup() {
     delay(2000);
     setCpuFrequencyMhz(240); // 设置主频到最高
@@ -100,8 +116,10 @@ void setup() {
     mpu_init();
     lua_init();
     run_lua_setup();
+    // printMemoryInfo();
 }
 
 void loop() {
     run_lua_loop();
+    // printMemoryInfo();
 }

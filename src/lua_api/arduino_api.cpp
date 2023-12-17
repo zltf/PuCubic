@@ -144,6 +144,39 @@ static int l_web_loop(lua_State *L)
     return 0;
 }
 
+static int l_tft_img(lua_State *L)
+{
+    log_i("l_tft_img1");
+    lua_Integer x = lua_tointeger(L, 1);
+    lua_Integer y = lua_tointeger(L, 2);
+    lua_Integer w = lua_tointeger(L, 3);
+    lua_Integer h = lua_tointeger(L, 4);
+    uint16_t img[w * h];
+    for(int i = 0; i < w * h; i++) {
+        lua_geti(L, 5, i + 1);
+        img[i] = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+    }
+    log_i("l_tft_img2");
+    tft.pushImage(x, y, w, h, img);
+    log_i("l_tft_img3");
+    return 0;
+}
+
+static int l_tft_fill(lua_State *L)
+{
+    log_i("l_tft_fill1");
+    lua_Integer x = lua_tointeger(L, 1);
+    lua_Integer y = lua_tointeger(L, 2);
+    lua_Integer w = lua_tointeger(L, 3);
+    lua_Integer h = lua_tointeger(L, 4);
+    lua_Integer color = lua_tointeger(L, 5);
+    log_i("l_tft_fill2");
+    tft.fillRect(x, y, w, h, color);
+    log_i("l_tft_fill3");
+    return 0;
+}
+
 static const struct luaL_Reg arduinoLib[] = {
     // misc
     {"delay", l_delay},
@@ -166,6 +199,9 @@ static const struct luaL_Reg arduinoLib[] = {
     {"web_arg", l_web_arg},
     {"web_send", l_web_send},
     {"web_loop", l_web_loop},
+    // tft
+    {"tft_img", l_tft_img},
+    {"tft_fill", l_tft_fill},
     {NULL, NULL},
 };
 
