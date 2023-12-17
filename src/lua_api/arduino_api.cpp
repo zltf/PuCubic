@@ -60,6 +60,40 @@ static int l_get_mpu_info(lua_State *L)
     return 3;
 }
 
+static int l_open_ap(lua_State *L)
+{
+    const char *ssid = lua_tostring(L, 1);
+    const char *pwd = lua_tostring(L, 2);
+
+    IPAddress local_ip(192, 168, 4, 2);
+    IPAddress gateway(192, 168, 4, 2);
+    IPAddress subnet(255, 255, 255, 0);
+
+    WiFi.enableAP(true);
+    WiFi.softAP(ssid, pwd);
+    WiFi.softAPConfig(local_ip, gateway, subnet);
+
+    lua_pushstring(L, WiFi.softAPIP().toString().c_str());
+    return 1;
+}
+
+static int l_conn_wifi(lua_State *L)
+{
+    const char *ssid = lua_tostring(L, 1);
+    const char *pwd = lua_tostring(L, 2);
+
+    WiFi.enableSTA(true);
+    WiFi.setSleep(false);
+    WiFi.begin(ssid, pwd);
+
+    while(WiFi.status() != WL_CONNECTED) {
+        delay(500);
+    }
+
+    lua_pushstring(L, WiFi.localIP().toString().c_str());
+    return 1;
+}
+
 static const struct luaL_Reg arduinoLib[] = {
     // misc
     {"delay", l_delay},
@@ -72,6 +106,9 @@ static const struct luaL_Reg arduinoLib[] = {
     {"delete_file", l_delete_file},
     // mpu
     {"get_mpu_info", l_get_mpu_info},
+    // wifi
+    {"open_ap", l_open_ap},
+    {"conn_wifi", l_conn_wifi},
     {NULL, NULL},
 };
 

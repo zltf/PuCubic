@@ -1,11 +1,12 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <TFT_eSPI.h>
-#include <MPU6050_light.h>
+#include "Arduino.h"
+#include "TFT_eSPI.h"
+#include "MPU6050_light.h"
+#include "WebServer.h"
+#include "WiFi.h"
 #include "driver/sd_card.h"
-
-#define GET_SYS_MILLIS xTaskGetTickCount
 
 struct MPUInfo {
     double angleX;
@@ -17,5 +18,6 @@ extern SdCard tf;
 extern TFT_eSPI tft;
 extern MPUInfo mpuInfo;
 extern SemaphoreHandle_t semaphoreMPUInfo;
+extern WebServer server;
 
 #endif

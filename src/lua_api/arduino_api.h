@@ -4,7 +4,6 @@ extern "C" {
     #include "lauxlib.h"
 }
 
-#include "Arduino.h"
 #include "common.h"
 
 int luaregister_arduino(lua_State *L);
