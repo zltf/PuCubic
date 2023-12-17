@@ -4,6 +4,10 @@
         "lua.h": "c",
         "*.tcc": "cpp",
         "ostream": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "new": "cpp",
+        "cmath": "cpp",
+        "system_error": "cpp",
+        "typeinfo": "cpp"
     }
 }

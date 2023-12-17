@@ -14,6 +14,12 @@ static int l_millis(lua_State *L)
     return 1;
 }
 
+static int l_restart(lua_State *L)
+{
+    ESP.restart();
+    return 0;
+}
+
 static int l_log_i(lua_State *L)
 {
     const char *msg = lua_tostring(L, 1);
@@ -94,10 +100,55 @@ static int l_conn_wifi(lua_State *L)
     return 1;
 }
 
+static int l_web_on(lua_State *L)
+{
+    const char *route = lua_tostring(L, 1);
+    const char *callback = lua_tostring(L, 2);
+
+    server.on(route, [L, callback] () {
+        int result = luaL_dostring(L, callback);
+        if (result != LUA_OK) {
+            const char* errorMsg = lua_tostring(L, -1);
+            log_i("Error executing script: %s", errorMsg);
+        }
+    });
+    return 0;
+}
+
+static int l_web_begin(lua_State *L)
+{
+    server.begin();
+    return 0;
+}
+
+static int l_web_arg(lua_State *L)
+{
+    const char *name = lua_tostring(L, 1);
+    String value = server.arg(name);
+    lua_pushstring(L, value.c_str());
+    return 1;
+}
+
+static int l_web_send(lua_State *L)
+{
+    lua_Integer code = lua_tointeger(L, 1);
+    const char *content_type = lua_tostring(L, 2);
+    const char *content = lua_tostring(L, 3);
+    server.send(code, content_type, content);
+    return 0;
+}
+
+static int l_web_loop(lua_State *L)
+{
+    server.handleClient();
+    return 0;
+}
+
 static const struct luaL_Reg arduinoLib[] = {
     // misc
     {"delay", l_delay},
     {"millis", l_millis},
+    {"restart", l_restart},
     // serial
     {"log_i", l_log_i},
     // file
@@ -109,6 +160,12 @@ static const struct luaL_Reg arduinoLib[] = {
     // wifi
     {"open_ap", l_open_ap},
     {"conn_wifi", l_conn_wifi},
+    // web
+    {"web_on", l_web_on},
+    {"web_begin", l_web_begin},
+    {"web_arg", l_web_arg},
+    {"web_send", l_web_send},
+    {"web_loop", l_web_loop},
     {NULL, NULL},
 };
 
