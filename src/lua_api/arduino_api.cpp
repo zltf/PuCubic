@@ -51,6 +51,13 @@ static int l_delete_file(lua_State *L)
     return 0;
 }
 
+static int l_list_file(lua_State *L)
+{
+    const char *path = lua_tostring(L, 1);
+    lua_pushstring(L, tf.listDir(path, 0).c_str());
+    return 1;
+}
+
 static int l_get_mpu_info(lua_State *L)
 {
     double angleX, angleY, angleZ;
@@ -211,7 +218,7 @@ static int l_time_set(lua_State *L)
     lua_Integer dy = lua_tointeger(L, 3);
     lua_Integer hr = lua_tointeger(L, 4);
     lua_Integer mn = lua_tointeger(L, 5);
-    lua_Integer sc = lua_tointeger(L, 5);
+    lua_Integer sc = lua_tointeger(L, 6);
     rtc.setTime(sc, mn, hr, dy, mt, yr);
     return 0;
 }
@@ -238,6 +245,7 @@ static const struct luaL_Reg arduinoLib[] = {
     {"read_file", l_read_file},
     {"write_file", l_write_file},
     {"delete_file", l_delete_file},
+    {"list_file", l_list_file},
     // mpu
     {"get_mpu_info", l_get_mpu_info},
     // wifi

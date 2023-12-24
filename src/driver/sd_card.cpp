@@ -164,9 +164,10 @@ void SdCard::init()
 
 }
 
-void SdCard::listDir(const char *dirname, uint8_t levels)
+String SdCard::listDir(const char *dirname, uint8_t levels)
 {
-    TF_VFS_IS_NULL()
+    String ret;
+    TF_VFS_IS_NULL(ret)
 
     log_i("Listing directory: %s\n", dirname);
     photo_file_num = 0;
@@ -175,12 +176,12 @@ void SdCard::listDir(const char *dirname, uint8_t levels)
     if (!root)
     {
         log_i("Failed to open directory");
-        return;
+        return ret;
     }
     if (!root.isDirectory())
     {
         log_i("Not a directory");
-        return;
+        return ret;
     }
 
     int dir_len = strlen(dirname) + 1;
@@ -191,6 +192,9 @@ void SdCard::listDir(const char *dirname, uint8_t levels)
         if (file.isDirectory())
         {
             log_i("  DIR : %s",file.name());
+            ret += "DIR :";
+            ret += file.name();
+            ret += "\n";
             if (levels)
             {
                 listDir(file.name(), levels - 1);
@@ -208,10 +212,14 @@ void SdCard::listDir(const char *dirname, uint8_t levels)
             log_i("%s",file_name);
             ++photo_file_num;
             log_i("  SIZE: %d",file.size());
+            ret += "FILE:";
+            ret += file.name();
+            ret += "\n";
         }
         file = root.openNextFile();
     }
     log_i("%d",photo_file_num);
+    return ret;
 }
 
 File_Info *SdCard::listDir(const char *dirname)

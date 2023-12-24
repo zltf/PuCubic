@@ -52,7 +52,7 @@ private:
 public:
     void init();
 
-    void listDir(const char *dirname, uint8_t levels);
+    String listDir(const char *dirname, uint8_t levels);
 
     File_Info *listDir(const char *dirname);
 
