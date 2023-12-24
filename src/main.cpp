@@ -11,6 +11,7 @@ MPU6050 mpu(Wire);
 MPUInfo mpuInfo;
 SemaphoreHandle_t semaphoreMPUInfo;
 WebServer server(80);
+HTTPClient httpClient;
 
 lua_State *L;
 

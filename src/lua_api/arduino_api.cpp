@@ -105,8 +105,14 @@ static int l_web_on(lua_State *L)
     const char *route = lua_tostring(L, 1);
     const char *callback = lua_tostring(L, 2);
 
-    server.on(route, [L, callback] () {
-        int result = luaL_dostring(L, callback);
+    char *destination = (char *)malloc(strlen(callback) + 1);
+    if (destination == NULL) {
+        log_i("l_web_on malloc error");
+        return 0;
+    }  
+    strcpy(destination, callback);  
+    server.on(route, [L, destination] () {
+        int result = luaL_dostring(L, destination);
         if (result != LUA_OK) {
             const char* errorMsg = lua_tostring(L, -1);
             log_i("Error executing script: %s", errorMsg);
@@ -144,9 +150,24 @@ static int l_web_loop(lua_State *L)
     return 0;
 }
 
+static int l_web_post(lua_State *L)
+{
+    const char *url = lua_tostring(L, 1);
+    const char *json = lua_tostring(L, 2);
+    httpClient.begin(url);
+    httpClient.addHeader("Content-Type", "application/json");
+    int httpResponseCode = httpClient.POST(json);
+    if (httpResponseCode <= 0) {
+        log_i("Error sending data. Error code: %s", String(httpResponseCode));
+    }
+    lua_pushinteger(L, httpResponseCode);
+    lua_pushstring(L, httpClient.getString().c_str());
+    httpClient.end();
+    return 2;
+}
+
 static int l_tft_img(lua_State *L)
 {
-    log_i("l_tft_img1");
     lua_Integer x = lua_tointeger(L, 1);
     lua_Integer y = lua_tointeger(L, 2);
     lua_Integer w = lua_tointeger(L, 3);
@@ -157,23 +178,18 @@ static int l_tft_img(lua_State *L)
         img[i] = lua_tointeger(L, -1);
         lua_pop(L, 1);
     }
-    log_i("l_tft_img2");
     tft.pushImage(x, y, w, h, img);
-    log_i("l_tft_img3");
     return 0;
 }
 
 static int l_tft_fill(lua_State *L)
 {
-    log_i("l_tft_fill1");
     lua_Integer x = lua_tointeger(L, 1);
     lua_Integer y = lua_tointeger(L, 2);
     lua_Integer w = lua_tointeger(L, 3);
     lua_Integer h = lua_tointeger(L, 4);
     lua_Integer color = lua_tointeger(L, 5);
-    log_i("l_tft_fill2");
     tft.fillRect(x, y, w, h, color);
-    log_i("l_tft_fill3");
     return 0;
 }
 
@@ -199,6 +215,7 @@ static const struct luaL_Reg arduinoLib[] = {
     {"web_arg", l_web_arg},
     {"web_send", l_web_send},
     {"web_loop", l_web_loop},
+    {"web_post", l_web_post},
     // tft
     {"tft_img", l_tft_img},
     {"tft_fill", l_tft_fill},

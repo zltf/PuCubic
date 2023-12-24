@@ -76,16 +76,17 @@ function setup()
     end
 
     arduino.tft_img(100, 100, 100, 100, img)
+
+    local code, resp = arduino.web_post("http://47.116.21.61:7000/post_endpoint", "{\"hello\":999}")
+    arduino.log_i(tostring(code))
+    arduino.log_i(resp)
 end
 
 local off = 0
 
 function loop()
-    arduino.log_i("loop1")
     arduino.web_loop()
-    arduino.log_i("loop2")
     local ax, ay, az = arduino.get_mpu_info()
-    arduino.log_i("loop3")
     --arduino.log_i(string.format("ms:%d ,ax:%f, ay:%f, az:%f", arduino.millis(), ax, ay, az))
     local img = {}
     for i = 1, 100 do
@@ -93,7 +94,6 @@ function loop()
             table.insert(img, i * 100)
         end
     end
-    arduino.log_i("loop4")
 
     off = off + 1
 

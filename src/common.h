@@ -6,6 +6,7 @@
 #include "MPU6050_light.h"
 #include "WebServer.h"
 #include "WiFi.h"
+#include "HTTPClient.h"
 #include "driver/sd_card.h"
 
 struct MPUInfo {
@@ -19,5 +20,6 @@ extern TFT_eSPI tft;
 extern MPUInfo mpuInfo;
 extern SemaphoreHandle_t semaphoreMPUInfo;
 extern WebServer server;
+extern HTTPClient httpClient;
 
 #endif
