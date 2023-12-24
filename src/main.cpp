@@ -12,6 +12,7 @@ MPUInfo mpuInfo;
 SemaphoreHandle_t semaphoreMPUInfo;
 WebServer server(80);
 HTTPClient httpClient;
+ESP32Time rtc;
 
 lua_State *L;
 

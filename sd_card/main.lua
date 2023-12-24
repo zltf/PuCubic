@@ -76,6 +76,9 @@ function setup()
     end
 
     arduino.tft_img(100, 100, 100, 100, img)
+    arduino.tft_string("hello", 50, 50, 2)
+
+    arduino.time_set(2023, 12, 24, 18, 35, 50)
 
     local code, resp = arduino.web_post("http://47.116.21.61:7000/post_endpoint", "{\"hello\":999}")
     arduino.log_i(tostring(code))
@@ -96,6 +99,10 @@ function loop()
     end
 
     off = off + 1
+
+    local yr, mt, dy, hr, mn, sc = arduino.time_get()
+    arduino.tft_fill(50, 50, 200, 100, 0)
+    arduino.tft_string(string.format("%d-%d-%d %d:%d:%d", yr, mt, dy, hr, mn, sc), 50, 50, 2)
 
     arduino.tft_fill(100 + off - 1, 100 + off - 1, 100, 100, 0)
     arduino.tft_img(100 + off, 100 + off, 100, 100, img)

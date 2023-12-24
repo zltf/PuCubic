@@ -182,6 +182,17 @@ static int l_tft_img(lua_State *L)
     return 0;
 }
 
+static int l_tft_img_string(lua_State *L)
+{
+    const char *str = lua_tostring(L, 1);
+    lua_Integer x = lua_tointeger(L, 2);
+    lua_Integer y = lua_tointeger(L, 3);
+    lua_Integer font = lua_tointeger(L, 4);
+    int ret = tft.drawString(str, x, y, font);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
 static int l_tft_fill(lua_State *L)
 {
     lua_Integer x = lua_tointeger(L, 1);
@@ -191,6 +202,29 @@ static int l_tft_fill(lua_State *L)
     lua_Integer color = lua_tointeger(L, 5);
     tft.fillRect(x, y, w, h, color);
     return 0;
+}
+
+static int l_time_set(lua_State *L)
+{
+    lua_Integer yr = lua_tointeger(L, 1);
+    lua_Integer mt = lua_tointeger(L, 2);
+    lua_Integer dy = lua_tointeger(L, 3);
+    lua_Integer hr = lua_tointeger(L, 4);
+    lua_Integer mn = lua_tointeger(L, 5);
+    lua_Integer sc = lua_tointeger(L, 5);
+    rtc.setTime(sc, mn, hr, dy, mt, yr);
+    return 0;
+}
+
+static int l_time_get(lua_State *L)
+{
+    lua_pushinteger(L, rtc.getYear());
+    lua_pushinteger(L, rtc.getMonth() + 1);
+    lua_pushinteger(L, rtc.getDay());
+    lua_pushinteger(L, rtc.getHour(true));
+    lua_pushinteger(L, rtc.getMinute());
+    lua_pushinteger(L, rtc.getSecond());
+    return 6;
 }
 
 static const struct luaL_Reg arduinoLib[] = {
@@ -218,7 +252,11 @@ static const struct luaL_Reg arduinoLib[] = {
     {"web_post", l_web_post},
     // tft
     {"tft_img", l_tft_img},
+    {"tft_string", l_tft_img_string},
     {"tft_fill", l_tft_fill},
+    // time
+    {"time_set", l_time_set},
+    {"time_get", l_time_get},
     {NULL, NULL},
 };
 
