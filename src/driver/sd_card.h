@@ -16,7 +16,7 @@
 #define SDMMC_CMD 1  //就是SD_MOSI
 #define SDMMC_D0  40  //就是SD_MISO
 
-#define DIR_FILE_NUM 10
+#define DIR_FILE_NUM 1000
 #define DIR_FILE_NAME_MAX_LEN 20
 #define FILENAME_MAX_LEN 100
 
@@ -71,6 +71,8 @@ public:
     void writeFile(const char *path, const char *content);
 
     File open(const String &path, const char *mode = FILE_READ);
+    void write(File &file, const uint8_t *buf, size_t size);
+    void close(File &file);
 
     void appendFile(const char *path, const char *message);
 

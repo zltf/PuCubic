@@ -107,18 +107,39 @@ static int l_conn_wifi(lua_State *L)
     return 1;
 }
 
-static int l_web_on(lua_State *L)
+static int l_web_get(lua_State *L)
 {
     const char *route = lua_tostring(L, 1);
     const char *callback = lua_tostring(L, 2);
 
     char *destination = (char *)malloc(strlen(callback) + 1);
     if (destination == NULL) {
-        log_i("l_web_on malloc error");
+        log_i("l_web_get malloc error");
         return 0;
     }  
     strcpy(destination, callback);  
-    server.on(route, [L, destination] () {
+    server.on(route, HTTP_GET, [L, destination] () {
+        int result = luaL_dostring(L, destination);
+        if (result != LUA_OK) {
+            const char* errorMsg = lua_tostring(L, -1);
+            log_i("Error executing script: %s", errorMsg);
+        }
+    });
+    return 0;
+}
+
+static int l_web_post(lua_State *L)
+{
+    const char *route = lua_tostring(L, 1);
+    const char *callback = lua_tostring(L, 2);
+
+    char *destination = (char *)malloc(strlen(callback) + 1);
+    if (destination == NULL) {
+        log_i("l_web_post malloc error");
+        return 0;
+    }  
+    strcpy(destination, callback);  
+    server.on(route, HTTP_POST, [L, destination] () {
         int result = luaL_dostring(L, destination);
         if (result != LUA_OK) {
             const char* errorMsg = lua_tostring(L, -1);
@@ -157,7 +178,7 @@ static int l_web_loop(lua_State *L)
     return 0;
 }
 
-static int l_web_post(lua_State *L)
+static int l_web_req_post(lua_State *L)
 {
     const char *url = lua_tostring(L, 1);
     const char *json = lua_tostring(L, 2);
@@ -211,6 +232,16 @@ static int l_tft_fill(lua_State *L)
     return 0;
 }
 
+static int l_tft_draw_circle(lua_State *L)
+{
+    lua_Integer x = lua_tointeger(L, 1);
+    lua_Integer y = lua_tointeger(L, 2);
+    lua_Integer r = lua_tointeger(L, 3);
+    lua_Integer color = lua_tointeger(L, 4);
+    tft.fillCircle(x, y, r, color);
+    return 0;
+}
+
 static int l_time_set(lua_State *L)
 {
     lua_Integer yr = lua_tointeger(L, 1);
@@ -252,16 +283,18 @@ static const struct luaL_Reg arduinoLib[] = {
     {"open_ap", l_open_ap},
     {"conn_wifi", l_conn_wifi},
     // web
-    {"web_on", l_web_on},
+    {"web_get", l_web_get},
+    {"web_post", l_web_post},
     {"web_begin", l_web_begin},
     {"web_arg", l_web_arg},
     {"web_send", l_web_send},
     {"web_loop", l_web_loop},
-    {"web_post", l_web_post},
+    {"web_req_post", l_web_req_post},
     // tft
     {"tft_img", l_tft_img},
     {"tft_string", l_tft_img_string},
     {"tft_fill", l_tft_fill},
+    {"tft_draw_circle", l_tft_draw_circle},
     // time
     {"time_set", l_time_set},
     {"time_get", l_time_get},

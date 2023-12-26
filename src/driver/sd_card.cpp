@@ -458,9 +458,17 @@ void SdCard::writeFile(const char *path, const char *content)
 
 File SdCard::open(const String &path, const char *mode)
 {
-    // TF_VFS_IS_NULL(RET)
-
     return tf_vfs->open(path, mode);
+}
+
+void SdCard::write(File &file, const uint8_t *buf, size_t size)
+{
+    file.write(buf, size);
+}
+
+void SdCard::close(File &file)
+{
+    file.close();
 }
 
 void SdCard::appendFile(const char *path, const char *message)

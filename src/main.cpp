@@ -13,6 +13,7 @@ SemaphoreHandle_t semaphoreMPUInfo;
 WebServer server(80);
 HTTPClient httpClient;
 ESP32Time rtc;
+File uploadingFile;
 
 lua_State *L;
 
@@ -70,6 +71,7 @@ void tft_init() {
     tft.init();
     tft.fillScreen(TFT_BLACK);
     tft.setRotation(4);
+    tft.setSwapBytes(true);
 }
 
 void mpuTask(void *param) {
@@ -109,6 +111,31 @@ void mpu_init() {
 //   log_i(" bytes");  
 // }
 
+void handleFileUpload() {
+    if (server.uri() != "/upload") {
+        return;
+    }
+    HTTPUpload& upload = server.upload();
+    if (upload.status == UPLOAD_FILE_START) {
+        String filename = upload.filename;
+        if (!filename.startsWith("/")) {
+            filename = "/" + filename;
+        }
+        log_i("upload open");
+        uploadingFile = tf.open(filename, FILE_WRITE);
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+        if (uploadingFile) {
+            log_i("upload %d", upload.currentSize);
+            tf.write(uploadingFile, upload.buf, upload.currentSize);
+        }
+    } else if (upload.status == UPLOAD_FILE_END) {
+        if (uploadingFile) {
+            log_i("upload close");
+            tf.close(uploadingFile);
+        }
+    }
+}
+
 void setup() {
     delay(2000);
     setCpuFrequencyMhz(240); // 设置主频到最高
@@ -119,6 +146,10 @@ void setup() {
     lua_init();
     run_lua_setup();
     // printMemoryInfo();
+
+    server.on("/upload", HTTP_POST, []() {
+        server.send(200, "text/plain", "");
+    }, handleFileUpload);
 }
 
 void loop() {
