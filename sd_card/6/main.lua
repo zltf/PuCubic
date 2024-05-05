@@ -1,24 +1,4 @@
-#include "common.h"
-
-#include "lua_api/arduino_api.h"
-
-static const uint16_t screenWidth  = 240;
-static const uint16_t screenHeight = 240;
-
-TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight);
-SdCard tf;
-MPU6050 mpu(Wire);
-MPUInfo mpuInfo;
-SemaphoreHandle_t semaphoreMPUInfo;
-WebServer server(80);
-HTTPClient httpClient;
-ESP32Time rtc;
-File uploadingFile;
-
-lua_State *L;
-
-#define USE_CODE_LUA 0
-String lua_code = R""(function require(mod)
+function require(mod)
     local code = arduino.read_file("/" .. mod .. ".lua")
     local fn = load(code)
     assert(fn)
@@ -288,11 +268,6 @@ end
 
 local Fly = require "fly"
 local GameOver = require "game_over"
--- local ROTATE = require "rotate"
-local Bee1l = require "bee1_80_l"
-local Bee2l = require "bee2_80_l"
-local Bee1r = require "bee1_80_r"
-local Bee2r = require "bee2_80_r"
 local Gift = {}
 Gift[1] = require "gift1"
 Gift[2] = require "gift2"
@@ -385,145 +360,24 @@ end
 
 ----------------------------------
 
-local show_status = 0
-local direction
+local Volcano1 = require "volcano1"
+local Volcano2 = require "volcano2"
+local Volcano3 = require "volcano3"
+local Volcano4 = require "volcano4"
+local Volcano5 = require "volcano5"
+local Volcano6 = require "volcano6"
+local Volcano7 = require "volcano7"
+local Volcano8 = require "volcano8"
 
-local rad = 0
-local flag = false
-
-local img_x_speed = 5
-local img_y_speed = 3
-local img_x = 80
-local img_y = 80
-
--- local function show1()
---     local sin = math.sin(rad)
---     local cos = math.cos(rad)
---     local ROTATE_COPY = {}
---     for i = 1, 80 do
---         for j = 1, 80 do
---             local arr_pos = (i - 1) * 80 + j
---             ROTATE_COPY[arr_pos] = ROTATE_COPY[arr_pos] or 0
---             local rx = math.floor(cos * i + sin * j + (1 - cos) * 40 - sin * 40 + 0.5)
---             local ry = math.floor(-sin * i + cos * j + sin * 40 + (1 - cos) * 40 + 0.5)
---             if rx >= 1 and rx <= 80 and ry >= 1 and ry <= 80 then
---                 local r_arr_pos = (rx - 1) * 80 + ry
---                 ROTATE_COPY[arr_pos] = ROTATE[r_arr_pos]
---             end
---         end
---     end
---     rad = rad + 0.1
-
---     arduino.tft_img(img_x, img_y, 80, 80, ROTATE_COPY)
--- end
-
-local function show2()
-    if flag then
-        arduino.tft_img(img_x, img_y, 80, 80, img_x_speed > 0 and Bee1r or Bee1l)
-        flag = false
-    else
-        arduino.tft_img(img_x, img_y, 80, 80, img_x_speed > 0 and Bee2r or Bee2l)
-        flag = true
-    end
-end
-
-local function main(ay)
-    if show_status == 0 then
-        show_status = 2 -- math.random(2)
-        direction = math.random(8)
-        if direction == 1 then -- 左上到右下
-            if math.random(2) == 1 then
-                img_x = -80
-                img_y = math.random(-80, 80)
-            else
-                img_x = math.random(-80, 80)
-                img_y = -80
-            end
-            img_x_speed = math.random(4, 6)
-            img_y_speed = math.random(4, 6)
-        elseif direction == 2 then -- 右上到左下
-            if math.random(2) == 1 then
-                img_x = 241
-                img_y = math.random(-80, 80)
-            else
-                img_x = math.random(80, 241)
-                img_y = -80
-            end
-            img_x_speed = -math.random(4, 6)
-            img_y_speed = math.random(4, 6)
-        elseif direction == 3 then -- 左下到右上
-            if math.random(2) == 1 then
-                img_x = -80
-                img_y = math.random(80, 241)
-            else
-                img_x = math.random(-80, 80)
-                img_y = 241
-            end
-            img_x_speed = math.random(4, 6)
-            img_y_speed = -math.random(4, 6)
-        elseif direction == 4 then -- 右下到左上
-            if math.random(2) == 1 then
-                img_x = 241
-                img_y = math.random(80, 241)
-            else
-                img_x = math.random(80, 241)
-                img_y = 241
-            end
-            img_x_speed = -math.random(4, 6)
-            img_y_speed = -math.random(4, 6)
-        elseif direction == 5 then -- 左到右
-            img_x = -80
-            img_y = math.random(20, 140)
-            img_x_speed = math.random(4, 5)
-            img_y_speed = math.random(-1, 1)
-        elseif direction == 6 then -- 右到左
-            img_x = 241
-            img_y = math.random(20, 140)
-            img_x_speed = -math.random(4, 5)
-            img_y_speed = math.random(-1, 1)
-        elseif direction == 7 then -- 上到下
-            img_x = math.random(20, 140)
-            img_y = -80
-            img_x_speed = math.random(-1, 1)
-            img_y_speed = math.random(4, 5)
-        elseif direction == 8 then -- 下到上
-            img_x = math.random(20, 140)
-            img_y = 241
-            img_x_speed = math.random(-1, 1)
-            img_y_speed = -math.random(4, 5)
-        end
-    end
-
-    if show_status == 1 then
-        -- show1() -- 旋转泡泡
-    elseif show_status == 2 then
-        show2() -- 小蜜蜂泡泡
-    elseif show_status == 3 then
-    elseif show_status == 4 then
-    elseif show_status == 5 then
-    end
-
-    if img_x_speed > 0 then
-        arduino.tft_fill(img_x - img_x_speed, img_y - img_y_speed, img_x_speed, 80 + img_y_speed + img_y_speed, 0)
-    else
-        arduino.tft_fill(img_x + 80, img_y - img_y_speed, -img_x_speed, 80 + img_y_speed + img_y_speed, 0)
-    end
-    if img_y_speed > 0 then
-        arduino.tft_fill(img_x, img_y - img_y_speed, 80, img_y_speed, 0)
-    else
-        arduino.tft_fill(img_x, img_y + 80, 80, -img_y_speed, 0)
-    end
-
-    if img_x > 241 or img_x < -80 then
-        show_status = 0
-    end
-    if img_y > 241 or img_y < -80 then
-        show_status = 0
-    end
-
-    arduino.delay(100)
-    img_x = img_x + img_x_speed
-    img_y = img_y + img_y_speed
+local function main()
+    arduino.tft_img(0, 0, 240, 30, Volcano1)
+    arduino.tft_img(0, 30, 240, 30, Volcano2)
+    arduino.tft_img(0, 60, 240, 30, Volcano3)
+    arduino.tft_img(0, 90, 240, 30, Volcano4)
+    arduino.tft_img(0, 120, 240, 30, Volcano5)
+    arduino.tft_img(0, 150, 240, 30, Volcano6)
+    arduino.tft_img(0, 180, 240, 30, Volcano7)
+    arduino.tft_img(0, 210, 240, 30, Volcano8)
 end
 
 function loop()
@@ -533,7 +387,7 @@ function loop()
     -- arduino.log_i(string.format("ms:%d ,ax:%f, ay:%f, az:%f", arduino.millis(), ax, ay, az))
 
     if status == 1 then
-        main(ay)
+        main()
 
         if ay < -15 then
             status = 2
@@ -609,149 +463,4 @@ function loop()
     arduino.tft_string(string.format("Hi-Score: %d", hi_score), 10, 20, 2)
     arduino.tft_string(string.format("level: %d    score: %d", level, score), 10, 200, 2)
     arduino.delay(DELAY[level])
-end)"";
-
-void lua_init() {
-    L = luaL_newstate();
-    luaL_openlibs(L);
-    luaregister_arduino(L);
-    if (L == NULL) {
-        log_i("Failed to create Lua state.");
-        return;
-    }
-    String code = tf.readFile("/main.lua");
-    log_i("%s", code.c_str());
-    #if USE_CODE_LUA
-        code = lua_code;
-        tf.writeFile("/main.lua", code.c_str());
-    #endif
-    log_i("%s", code.c_str());
-    int result = luaL_dostring(L, code.c_str());
-    if (result != LUA_OK) {
-        const char* errorMsg = lua_tostring(L, -1);
-        log_i("Error executing script: %s", errorMsg);
-        return;
-    }
-}
-
-void run_lua_setup() {
-    lua_getglobal(L, "setup");
-    if (!lua_isfunction(L, -1)) {
-        log_i("Invalid function type for 'setup'.");
-        lua_pop(L, 1);
-        return;
-    }
-    int result = lua_pcall(L, 0, 0, 0);
-    if (result != LUA_OK) {
-        const char* errorMsg = lua_tostring(L, -1);
-        log_i("Error calling Lua function: %s", errorMsg);
-        lua_pop(L, 1);
-        return;
-    }
-}
-
-void run_lua_loop() {
-    lua_getglobal(L, "loop");
-    if (!lua_isfunction(L, -1)) {
-        log_i("Invalid function type for 'loop'.");
-        lua_pop(L, 1);
-        return;
-    }
-    int result = lua_pcall(L, 0, 0, 0);
-    if (result != LUA_OK) {
-        const char* errorMsg = lua_tostring(L, -1);
-        log_i("Error calling Lua function: %s", errorMsg);
-        lua_pop(L, 1);
-        return;
-    }
-}
-
-void tft_init() {
-    tft.init();
-    tft.fillScreen(TFT_BLACK);
-    tft.setRotation(4);
-    tft.setSwapBytes(true);
-}
-
-void mpuTask(void *param) {
-    while(true) {
-        if(xSemaphoreTake(semaphoreMPUInfo, portMAX_DELAY)) {
-            mpu.update();
-            mpuInfo.angleX = mpu.getAngleX();
-            mpuInfo.angleY = mpu.getAngleY();
-            mpuInfo.angleZ = mpu.getAngleZ();
-            xSemaphoreGive(semaphoreMPUInfo);
-        }
-        delay(5);
-    }
-}
-
-void mpu_init() {
-    Wire.begin(41, 42);
-    mpu.begin();
-    mpu.calcGyroOffsets();
-    semaphoreMPUInfo = xSemaphoreCreateMutex();
-    xTaskCreatePinnedToCore(mpuTask, "mpuTask", 4096, NULL, 5, NULL, 1);
-}
-
-// void printMemoryInfo() {  
-//   int freeMemory;  
-//   int totalMemory = ESP.getFreeSketchSpace() - 0x1000; // 减去保留的内存空间  
-//   freeMemory = ESP.getFreeHeap();  
-//   log_i("Memory Info:");  
-//   log_i("Total memory: ");  
-//   log_i("%d", totalMemory);  
-//   log_i(" bytes");  
-//   log_i("Free memory: ");  
-//   log_i("%d", freeMemory);  
-//   log_i(" bytes");  
-//   log_i("Used memory: ");  
-//   log_i("%d", totalMemory - freeMemory);  
-//   log_i(" bytes");  
-// }
-
-void handleFileUpload() {
-    if (server.uri() != "/upload") {
-        return;
-    }
-    HTTPUpload& upload = server.upload();
-    if (upload.status == UPLOAD_FILE_START) {
-        String filename = upload.filename;
-        if (!filename.startsWith("/")) {
-            filename = "/" + filename;
-        }
-        log_i("upload open");
-        uploadingFile = tf.open(filename, FILE_WRITE);
-    } else if (upload.status == UPLOAD_FILE_WRITE) {
-        if (uploadingFile) {
-            log_i("upload %d", upload.currentSize);
-            tf.write(uploadingFile, upload.buf, upload.currentSize);
-        }
-    } else if (upload.status == UPLOAD_FILE_END) {
-        if (uploadingFile) {
-            log_i("upload close");
-            tf.close(uploadingFile);
-        }
-    }
-}
-
-void setup() {
-    delay(2000);
-    setCpuFrequencyMhz(240); // 设置主频到最高
-    Serial.begin(115200);
-    tft_init();
-    tf.init();
-    mpu_init();
-    lua_init();
-    run_lua_setup();
-    // printMemoryInfo();
-
-    server.on("/upload", HTTP_POST, []() {
-        server.send(200, "text/plain", "");
-    }, handleFileUpload);
-}
-
-void loop() {
-    run_lua_loop();
-    // printMemoryInfo();
-}
+end
